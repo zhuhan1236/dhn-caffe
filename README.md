@@ -1,27 +1,27 @@
-# mmd-caffe
+# dhn-caffe
 
-This is the implementation of ICML paper "Learning Transferable Features with Deep Adaptation Networks". We fork the repository with version ID `c6414ea` from [Caffe](https://github.com/BVLC/caffe) and make our modifications. The main modifications are listed as follow:
+This is the implementation of AAAI paper "Deep Hashing Network for Efficient Similarity Retrieval". We fork the repository from [Caffe](https://github.com/BVLC/caffe) and make our modifications. The main modifications are listed as follow:
 
-- Change the label from a single integer to a tuple, which contains the origin label and an indicator to distinguish source and target
-- Add mmd layer described in the paper to neuron layers
+- Change the label from a single integer to an array, whose length is the dimension of label.
+- Add pairwise loss layer described in the paper
 
 Training Model
 ---------------
 
-In `models/icml/amazon_to_webcam_common_setting`, we give an example model based on Alexnet. In this model, we insert mmd layers  after inception fc7 and fc8 individually.
+In `models/nus_wide`, we give an example model based on Alexnet and NUS-WIDE dataset.
 
 The `bvlc_reference_caffenet` is used as the pre-trained model.
 
 Data Preparation
 ---------------
-In `data/office/amazon_to_webcam_common_setting/*.txt`, we give an example to show how to prepare the train and test data file. In this task, `amazon` dataset is the source domain and `webcam` dataset is the target domain. For training data in source domain, it's label looks like `(-1, origin_label)`. For training data in target domain, it's label looks like `(origin_label, -1)`. For testing data, it's label looks like `(origin_label, -1)`. Integer `-1` is used to distinguish source and target during training and testing, and `origin_label` is the acutal label of the image.
-
-For semi-supervised tasks, the label of labeled target data looks like `(I, origin_label)`. `I` is any positive integer (larger than the number of classes) and should be added to `ignore_label` of entropy loss layer.
+In `data/nus_wide/train.txt`, we give an example to show how to prepare the train data file. In this file, each image in NUS-WIDE has its label whose dimension is 21. The training set is extracted from the whole dataset as described in our paper.
 
 Parameter Tuning
 ---------------
-In mmd-layer, parameter `iter_of_epoch` should be set to tell mmd layer when to update data. Practically, `iter_of_epoch = (source_num + target_num) / batch_size`. Users only need to tune `mmd_lambda` parameter.
+In ImageDataLayer, parameter `label_dim` should be set to tell the dimension of label. For example, `label_dim: 21` for NUS-WIDE. 
 
-Dependency
+`base_lr`, `stepsize` and `gamma` in `solver.prototxt` can be tuned to achieve better performance. `num_output` of `hash_layer` in `train_val.prototxt` can be tuned to train with different hash bits. `q_gamma` in `pairwise_loss` layer can be tuned to set different loss weight for quantization loss.
+
+Testing
 ---------------
-We use [CGAL](http://www.cgal.org) to solve Quadratic Programming problem when updating `beta`. Please install it before compiling this code. We add CGAL as LIBRARIES in `Makefile`. However, if you prefer to compile caffe with `cmake`, maybe you should config CGAL yourself.
+After training from `bvlc_reference_caffenet`, a finetuned `caffemodel` can be used to generate hash codes for images in database and test samples. The python program in `models/predict` can help gengerating hash codes by given a file like `train.txt`.
