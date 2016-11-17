@@ -1,3 +1,7 @@
+# DEPRECATED
+
+This repository is deprecated, please move to [hash-caffe](https://github.com/thuml/hash-caffe)
+
 # dhn-caffe
 
 This is the implementation of AAAI paper "Deep Hashing Network for Efficient Similarity Retrieval". We fork the repository from [Caffe](https://github.com/BVLC/caffe) and make our modifications. The main modifications are listed as follow:
